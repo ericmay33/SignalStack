@@ -1,0 +1,42 @@
+import httpx
+from app.config import FINNHUB_API_KEY
+
+_BASE = "https://finnhub.io/api/v1"
+_TIMEOUT = 10.0
+
+
+async def _get(endpoint: str, params: dict) -> dict | list:
+    params = {**params, "token": FINNHUB_API_KEY}
+    async with httpx.AsyncClient(timeout=_TIMEOUT) as client:
+        resp = await client.get(f"{_BASE}{endpoint}", params=params)
+        resp.raise_for_status()
+        return resp.json()
+
+
+async def get_quote(ticker: str) -> dict:
+    try:
+        return await _get("/quote", {"symbol": ticker})  # type: ignore[return-value]
+    except Exception:
+        return {}
+
+
+async def get_recommendations(ticker: str) -> list:
+    try:
+        result = await _get("/stock/recommendation", {"symbol": ticker})
+        return result if isinstance(result, list) else []
+    except Exception:
+        return []
+
+
+async def get_price_target(ticker: str) -> dict:
+    try:
+        return await _get("/stock/price-target", {"symbol": ticker})  # type: ignore[return-value]
+    except Exception:
+        return {}
+
+
+async def get_eps_estimate(ticker: str) -> dict:
+    try:
+        return await _get("/stock/eps-estimate", {"symbol": ticker, "freq": "annual"})  # type: ignore[return-value]
+    except Exception:
+        return {}
