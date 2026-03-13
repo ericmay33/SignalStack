@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import ConsensusDonut from "./ConsensusDonut";
 import PriceTargetBar from "./PriceTargetBar";
-import { CONSENSUS_COLORS, type StockData } from "../lib/mockData";
+import { CONSENSUS_COLORS } from "../lib/mockData";
+import type { StockData } from "../types";
 
 interface StockCardProps {
   ticker: string;
