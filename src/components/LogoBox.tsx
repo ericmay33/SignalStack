@@ -11,7 +11,7 @@ export default function LogoBox({ ticker, logoUrl, size = 48 }: LogoBoxProps) {
 
   return (
     <div
-      className="rounded-xl bg-surface-container flex items-center justify-center shrink-0 overflow-hidden"
+      className="rounded-full bg-surface-container flex items-center justify-center shrink-0 overflow-hidden"
       style={{ width: size, height: size }}
     >
       {logoUrl && !failed ? (

@@ -63,6 +63,7 @@ export default function ListManager({
                   price={q?.price ?? null}
                   change={q?.change ?? null}
                   loading={loading && !q}
+                  logoUrl={q?.logo}
                   onRemove={() => removeTicker(t)}
                   index={i}
                 />

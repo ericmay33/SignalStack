@@ -1,14 +1,18 @@
+import { useState } from "react";
+
 interface TickerChipProps {
   ticker: string;
   name: string;
   price: number | null;
   change: number | null;
   loading: boolean;
+  logoUrl?: string;
   onRemove: () => void;
   index: number;
 }
 
-export default function TickerChip({ ticker, name, price, change, loading, onRemove, index }: TickerChipProps) {
+export default function TickerChip({ ticker, name, price, change, loading, logoUrl, onRemove, index }: TickerChipProps) {
+  const [logoFailed, setLogoFailed] = useState(false);
   const isUp = (change ?? 0) >= 0;
 
   return (
@@ -16,9 +20,18 @@ export default function TickerChip({ ticker, name, price, change, loading, onRem
       className="flex items-center gap-3 bg-surface-container-low border border-outline-variant/30 rounded-xl px-3.5 py-3 animate-fade-slide-in hover:border-primary/20 transition-colors"
       style={{ animationDelay: `${index * 50}ms` }}
     >
-      {/* $ icon box */}
-      <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-        <span className="text-primary font-bold text-sm">$</span>
+      {/* Logo / $ icon box */}
+      <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0 overflow-hidden">
+        {logoUrl && !logoFailed ? (
+          <img
+            src={logoUrl}
+            alt={ticker}
+            className="w-full h-full object-contain p-1"
+            onError={() => setLogoFailed(true)}
+          />
+        ) : (
+          <span className="text-primary font-bold text-sm">$</span>
+        )}
       </div>
 
       {/* Ticker + price */}
