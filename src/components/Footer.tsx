@@ -2,9 +2,10 @@ import type { StockData } from "../types";
 
 interface FooterProps {
   data?: Record<string, StockData> | null;
+  latencyMs?: number | null;
 }
 
-export default function Footer({ data }: FooterProps) {
+export default function Footer({ data, latencyMs }: FooterProps) {
   const entries = data ? Object.values(data) : [];
 
   const avgUpside =
@@ -47,7 +48,7 @@ export default function Footer({ data }: FooterProps) {
           </span>
           <span>
             System Latency:{" "}
-            <span className="text-on-surface font-semibold">14ms</span>
+            <span className="text-on-surface font-semibold">{latencyMs != null ? `${latencyMs}ms` : "—"}</span>
           </span>
         </div>
 

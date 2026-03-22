@@ -1,11 +1,27 @@
 import SearchBar from "../components/SearchBar";
 import TickerChip from "../components/TickerChip";
-import { STOCK_DB, ALL_TICKERS } from "../lib/mockData";
+import { STOCK_DB } from "../lib/mockData";
+import { SP500_TICKERS, TICKER_LIST } from "../lib/tickers";
 
 interface ListManagerProps {
   tickers: string[];
   setTickers: (tickers: string[]) => void;
   onApply: () => void;
+}
+
+/** Build a minimal StockData stub for tickers not in STOCK_DB */
+function getTickerData(t: string) {
+  if (STOCK_DB[t]) return STOCK_DB[t];
+  return {
+    name: SP500_TICKERS[t] ?? t,
+    price: 0,
+    change: 0,
+    consensus: "—",
+    ratings: { strongBuy: 0, buy: 0, hold: 0, sell: 0, strongSell: 0 },
+    target: { low: 0, avg: 0, high: 0 },
+    logo: "$",
+    color: "#22c55e",
+  };
 }
 
 export default function ListManager({
@@ -23,7 +39,7 @@ export default function ListManager({
     setTickers(tickers.filter((x) => x !== t));
   };
 
-  const trendingTickers = ALL_TICKERS.filter((t) => !tickers.includes(t)).slice(0, 6);
+  const trendingTickers = TICKER_LIST.filter((t) => !tickers.includes(t)).slice(0, 6);
 
   return (
     <div className="pt-20 pb-16 px-5 max-w-6xl mx-auto dot-grid-bg min-h-screen">
@@ -50,17 +66,15 @@ export default function ListManager({
 
           {/* Ticker chips grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6 min-h-[60px]">
-            {tickers.map((t, i) =>
-              STOCK_DB[t] ? (
-                <TickerChip
-                  key={t}
-                  ticker={t}
-                  data={STOCK_DB[t]}
-                  onRemove={() => removeTicker(t)}
-                  index={i}
-                />
-              ) : null
-            )}
+            {tickers.map((t, i) => (
+              <TickerChip
+                key={t}
+                ticker={t}
+                data={getTickerData(t)}
+                onRemove={() => removeTicker(t)}
+                index={i}
+              />
+            ))}
           </div>
 
           {tickers.length === 0 && (
@@ -127,7 +141,7 @@ export default function ListManager({
                         {t}
                       </span>
                       <span className="text-zinc-600 text-[11px]">
-                        {STOCK_DB[t]?.name}
+                        {SP500_TICKERS[t]}
                       </span>
                     </div>
                   </div>

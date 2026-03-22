@@ -12,7 +12,7 @@ export default function App() {
   const [page, setPage] = useState<Page>("list");
   const [transitioning, setTransitioning] = useState(false);
   const { tickers, setTickers } = useWatchlist();
-  const { data, loading, error, retry } = useStockData(
+  const { data, loading, error, latencyMs, retry } = useStockData(
     page === "dashboard" ? tickers : []
   );
 
@@ -54,7 +54,7 @@ export default function App() {
           />
         )}
       </div>
-      <Footer data={page === "dashboard" ? data : null} />
+      <Footer data={page === "dashboard" ? data : null} latencyMs={latencyMs} />
     </div>
   );
 }

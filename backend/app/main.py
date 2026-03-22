@@ -10,7 +10,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",
-        "https://signalstack.vercel.app",
+        "http://localhost:3000",
+        "https://signal-stack-dashboard.vercel.app",
     ],
     allow_methods=["*"],
     allow_headers=["*"],

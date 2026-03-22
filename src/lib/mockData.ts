@@ -102,5 +102,3 @@ export const STOCK_DB: Record<string, StockData> = {
     color: "#6C3EBF",
   },
 };
-
-export const ALL_TICKERS = Object.keys(STOCK_DB);

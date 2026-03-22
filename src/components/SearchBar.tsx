@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { STOCK_DB, ALL_TICKERS } from "../lib/mockData";
+import { TICKER_LIST, SP500_TICKERS } from "../lib/tickers";
 
 interface SearchBarProps {
   tickers: string[];
@@ -30,10 +30,10 @@ export default function SearchBar({ tickers, onAdd, count }: SearchBarProps) {
     if (val.length > 0) {
       const upper = val.toUpperCase();
       setSuggestions(
-        ALL_TICKERS.filter(
+        TICKER_LIST.filter(
           (t) =>
             (t.includes(upper) ||
-              STOCK_DB[t].name.toUpperCase().includes(upper)) &&
+              SP500_TICKERS[t].toUpperCase().includes(upper)) &&
             !tickers.includes(t)
         ).slice(0, 5)
       );
@@ -98,7 +98,7 @@ export default function SearchBar({ tickers, onAdd, count }: SearchBarProps) {
                   {t}
                 </span>
                 <span className="text-zinc-500 text-xs">
-                  {STOCK_DB[t].name}
+                  {SP500_TICKERS[t]}
                 </span>
               </div>
               <span className="material-symbols-outlined text-[20px] text-zinc-600 group-hover:text-primary transition-colors">

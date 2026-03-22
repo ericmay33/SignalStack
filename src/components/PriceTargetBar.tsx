@@ -13,7 +13,7 @@ export default function PriceTargetBar({
 }: PriceTargetBarProps) {
   const range = high - low || 1;
   const avgPos = Math.max(0, Math.min(100, ((avg - low) / range) * 100));
-  const upside = (((avg - current) / current) * 100).toFixed(1);
+  const upside = current > 0 ? (((avg - current) / current) * 100).toFixed(1) : "0.0";
   const isUp = avg >= current;
 
   return (

@@ -1,18 +1,19 @@
 import { useState, useEffect, useMemo } from "react";
 import type { StockData } from "../types";
 import { fetchStockData } from "../lib/api";
-import { STOCK_DB } from "../lib/mockData";
 
 interface FetchResult {
   data: Record<string, StockData> | null;
   error: string | null;
   fetchedKey: string;
+  latencyMs: number | null;
 }
 
-interface UseStockDataReturn {
+export interface UseStockDataReturn {
   data: Record<string, StockData> | null;
   loading: boolean;
   error: string | null;
+  latencyMs: number | null;
   retry: () => void;
 }
 
@@ -21,6 +22,7 @@ export function useStockData(tickers: string[]): UseStockDataReturn {
     data: null,
     error: null,
     fetchedKey: "",
+    latencyMs: null,
   });
   const [retryCount, setRetryCount] = useState(0);
 
@@ -35,27 +37,24 @@ export function useStockData(tickers: string[]): UseStockDataReturn {
 
     const controller = new AbortController();
     const key = requestKey;
+    const start = performance.now();
 
     fetchStockData(tickers, controller.signal)
       .then((data) => {
-        setResult({ data, error: null, fetchedKey: key });
+        const latencyMs = Math.round(performance.now() - start);
+        setResult({ data, error: null, fetchedKey: key, latencyMs });
       })
       .catch((err: unknown) => {
         if (err instanceof Error && err.name === "AbortError") return;
 
-        // Fall back to mock data when API is unreachable
-        const fallback: Record<string, StockData> = {};
-        for (const t of tickers) {
-          if (STOCK_DB[t]) fallback[t] = STOCK_DB[t];
-        }
-
         setResult({
-          data: Object.keys(fallback).length > 0 ? fallback : null,
+          data: null,
           error:
             err instanceof Error
               ? err.message
               : "Failed to fetch stock data",
           fetchedKey: key,
+          latencyMs: null,
         });
       });
 
@@ -69,5 +68,11 @@ export function useStockData(tickers: string[]): UseStockDataReturn {
 
   const retry = () => setRetryCount((c) => c + 1);
 
-  return { data, loading, error: loading ? null : result.error, retry };
+  return {
+    data,
+    loading,
+    error: loading ? null : result.error,
+    latencyMs: result.latencyMs,
+    retry,
+  };
 }
