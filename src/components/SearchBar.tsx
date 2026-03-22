@@ -49,7 +49,7 @@ export default function SearchBar({ tickers, onAdd, count }: SearchBarProps) {
   };
 
   return (
-    <div className="relative mb-5">
+    <div className={`relative transition-[margin] duration-200 ${suggestions.length > 0 ? "mb-56" : "mb-5"}`}>
       {/* Search input wrapper */}
       <div
         className={`flex items-center gap-3 glass-panel rounded-xl px-4 py-3.5 transition-all duration-200 ${
@@ -85,7 +85,7 @@ export default function SearchBar({ tickers, onAdd, count }: SearchBarProps) {
 
       {/* Autocomplete dropdown */}
       {suggestions.length > 0 && (
-        <div className="absolute top-full left-0 right-0 mt-1.5 glass-panel rounded-xl overflow-hidden z-50">
+        <div className="absolute top-full left-0 right-0 mt-1.5 rounded-xl overflow-hidden z-50 bg-[#141414] border border-white/[0.08]">
           {suggestions.map((t) => (
             <div
               key={t}
