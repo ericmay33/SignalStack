@@ -26,7 +26,7 @@ export default function TickerChip({ ticker, name, price, change, loading, logoU
           <img
             src={logoUrl}
             alt={ticker}
-            className="w-full h-full object-contain p-1"
+            className="w-full h-full object-cover rounded-full p-1"
             onError={() => setLogoFailed(true)}
           />
         ) : (

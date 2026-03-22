@@ -18,7 +18,7 @@ export default function LogoBox({ ticker, logoUrl, size = 48 }: LogoBoxProps) {
         <img
           src={logoUrl}
           alt={ticker}
-          className="w-full h-full object-contain p-1.5"
+          className="w-full h-full object-cover rounded-full p-1.5"
           onError={() => setFailed(true)}
         />
       ) : (
