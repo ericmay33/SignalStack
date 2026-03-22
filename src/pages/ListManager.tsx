@@ -1,7 +1,7 @@
 import SearchBar from "../components/SearchBar";
 import TickerChip from "../components/TickerChip";
-import { STOCK_DB } from "../lib/mockData";
 import { SP500_TICKERS, TICKER_LIST } from "../lib/tickers";
+import { useQuotes } from "../hooks/useQuotes";
 
 interface ListManagerProps {
   tickers: string[];
@@ -9,26 +9,13 @@ interface ListManagerProps {
   onApply: () => void;
 }
 
-/** Build a minimal StockData stub for tickers not in STOCK_DB */
-function getTickerData(t: string) {
-  if (STOCK_DB[t]) return STOCK_DB[t];
-  return {
-    name: SP500_TICKERS[t] ?? t,
-    price: 0,
-    change: 0,
-    consensus: "—",
-    ratings: { strongBuy: 0, buy: 0, hold: 0, sell: 0, strongSell: 0 },
-    target: { low: 0, avg: 0, high: 0 },
-    logo: "$",
-    color: "#22c55e",
-  };
-}
-
 export default function ListManager({
   tickers,
   setTickers,
   onApply,
 }: ListManagerProps) {
+  const { quotes, loading } = useQuotes(tickers);
+
   const addTicker = (t: string) => {
     if (!tickers.includes(t) && tickers.length < 8) {
       setTickers([...tickers, t]);
@@ -66,15 +53,21 @@ export default function ListManager({
 
           {/* Ticker chips grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6 min-h-[60px]">
-            {tickers.map((t, i) => (
-              <TickerChip
-                key={t}
-                ticker={t}
-                data={getTickerData(t)}
-                onRemove={() => removeTicker(t)}
-                index={i}
-              />
-            ))}
+            {tickers.map((t, i) => {
+              const q = quotes[t];
+              return (
+                <TickerChip
+                  key={t}
+                  ticker={t}
+                  name={q?.name ?? SP500_TICKERS[t] ?? t}
+                  price={q?.price ?? null}
+                  change={q?.change ?? null}
+                  loading={loading && !q}
+                  onRemove={() => removeTicker(t)}
+                  index={i}
+                />
+              );
+            })}
           </div>
 
           {tickers.length === 0 && (

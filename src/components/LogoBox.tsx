@@ -82,21 +82,34 @@ const DOMAIN_OVERRIDES: Record<string, string> = {
   ANET: "arista.com",
 };
 
+function getLogoSources(domain: string): string[] {
+  return [
+    `https://logo.clearbit.com/${domain}`,
+    `https://img.logo.dev/${domain}?token=pk_anonymous`,
+  ];
+}
+
 export default function LogoBox({ ticker, size = 48 }: LogoBoxProps) {
-  const [failed, setFailed] = useState(false);
+  const [sourceIndex, setSourceIndex] = useState(0);
   const domain = DOMAIN_OVERRIDES[ticker] ?? `${ticker.toLowerCase().replace(/_/g, "")}.com`;
+  const sources = getLogoSources(domain);
+  const exhausted = sourceIndex >= sources.length;
+
+  const handleError = () => {
+    setSourceIndex((i) => i + 1);
+  };
 
   return (
     <div
       className="rounded-xl bg-surface-container flex items-center justify-center shrink-0 overflow-hidden"
       style={{ width: size, height: size }}
     >
-      {!failed ? (
+      {!exhausted ? (
         <img
-          src={`https://logo.clearbit.com/${domain}`}
+          src={sources[sourceIndex]}
           alt={ticker}
           className="w-full h-full object-contain p-1.5"
-          onError={() => setFailed(true)}
+          onError={handleError}
         />
       ) : (
         <span className="text-primary font-bold text-lg">$</span>

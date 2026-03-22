@@ -54,9 +54,9 @@ export default function PriceTargetBar({
 
       {/* Labels */}
       <div className="flex justify-between text-[9px] text-zinc-600 font-medium uppercase">
-        <span>Low ${low}</span>
-        <span className="text-zinc-400 font-semibold">Avg ${avg}</span>
-        <span>High ${high}</span>
+        <span>Low ${low.toFixed(2)}</span>
+        <span className="text-zinc-400 font-semibold">Avg ${avg.toFixed(2)}</span>
+        <span>High ${high.toFixed(2)}</span>
       </div>
     </div>
   );

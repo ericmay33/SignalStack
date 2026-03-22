@@ -1,14 +1,15 @@
-import type { StockData } from "../types";
-
 interface TickerChipProps {
   ticker: string;
-  data: StockData;
+  name: string;
+  price: number | null;
+  change: number | null;
+  loading: boolean;
   onRemove: () => void;
   index: number;
 }
 
-export default function TickerChip({ ticker, data, onRemove, index }: TickerChipProps) {
-  const isUp = data.change >= 0;
+export default function TickerChip({ ticker, name, price, change, loading, onRemove, index }: TickerChipProps) {
+  const isUp = (change ?? 0) >= 0;
 
   return (
     <div
@@ -22,16 +23,23 @@ export default function TickerChip({ ticker, data, onRemove, index }: TickerChip
 
       {/* Ticker + price */}
       <div className="flex-1 min-w-0">
-        <div className="text-on-surface font-bold text-sm tracking-wide">
-          {ticker}
+        <div className="flex items-center gap-2">
+          <span className="text-on-surface font-bold text-sm tracking-wide">{ticker}</span>
+          <span className="text-zinc-600 text-[11px] truncate">{name}</span>
         </div>
         <div className="flex items-center gap-2 text-xs">
-          <span className="text-zinc-400 font-medium">
-            ${data.price.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-          </span>
-          <span className={`font-semibold ${isUp ? "text-primary" : "text-red-400"}`}>
-            {isUp ? "+" : ""}{data.change.toFixed(2)}%
-          </span>
+          {loading || price === null ? (
+            <span className="text-zinc-600 font-medium animate-pulse">Loading...</span>
+          ) : (
+            <>
+              <span className="text-zinc-400 font-medium">
+                ${price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </span>
+              <span className={`font-semibold ${isUp ? "text-primary" : "text-red-400"}`}>
+                {isUp ? "+" : ""}{(change ?? 0).toFixed(2)}%
+              </span>
+            </>
+          )}
         </div>
       </div>
 
