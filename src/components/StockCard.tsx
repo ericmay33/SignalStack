@@ -46,7 +46,7 @@ export default function StockCard({ ticker, data, delay = 0 }: StockCardProps) {
       {/* Header: Logo + Ticker + Price */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
-          <LogoBox ticker={ticker} size={48} />
+          <LogoBox ticker={ticker} logoUrl={data.logo} size={48} />
           <div>
             <div className="text-on-surface font-bold text-base tracking-wide">
               {ticker}

@@ -1,39 +1,43 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import type { StockData } from "../types";
 import { fetchStockData } from "../lib/api";
 
-/**
- * Lightweight hook that fetches real price/change data for the
- * ListManager ticker chips. Returns a map of ticker → StockData
- * (only price and change are used by TickerChip).
- */
+interface QuoteResult {
+  data: Record<string, StockData>;
+  fetchedKey: string;
+}
+
 export function useQuotes(tickers: string[]) {
-  const [quotes, setQuotes] = useState<Record<string, StockData>>({});
-  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<QuoteResult>({
+    data: {},
+    fetchedKey: "",
+  });
 
   const key = tickers.join(",");
+  const loading = tickers.length > 0 && result.fetchedKey !== key;
 
   useEffect(() => {
-    if (tickers.length === 0) {
-      setQuotes({});
-      return;
-    }
+    if (tickers.length === 0) return;
 
     const controller = new AbortController();
-    setLoading(true);
+    const currentKey = key;
 
     fetchStockData(tickers, controller.signal)
       .then((data) => {
-        setQuotes(data);
-        setLoading(false);
+        setResult({ data, fetchedKey: currentKey });
       })
       .catch((err: unknown) => {
         if (err instanceof Error && err.name === "AbortError") return;
-        setLoading(false);
+        setResult({ data: {}, fetchedKey: currentKey });
       });
 
     return () => controller.abort();
   }, [key, tickers]);
+
+  const quotes = useMemo(
+    () => (tickers.length === 0 ? {} : result.data),
+    [tickers.length, result.data]
+  );
 
   return { quotes, loading };
 }

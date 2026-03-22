@@ -1,6 +1,5 @@
 import { useState } from "react";
 import Header from "./components/Header";
-import Footer from "./components/Footer";
 import ListManager from "./pages/ListManager";
 import Dashboard from "./pages/Dashboard";
 import { useWatchlist } from "./hooks/useWatchlist";
@@ -12,7 +11,7 @@ export default function App() {
   const [page, setPage] = useState<Page>("list");
   const [transitioning, setTransitioning] = useState(false);
   const { tickers, setTickers } = useWatchlist();
-  const { data, loading, error, latencyMs, retry } = useStockData(
+  const { data, loading, error, retry } = useStockData(
     page === "dashboard" ? tickers : []
   );
 
@@ -54,7 +53,6 @@ export default function App() {
           />
         )}
       </div>
-      <Footer data={page === "dashboard" ? data : null} latencyMs={latencyMs} />
     </div>
   );
 }

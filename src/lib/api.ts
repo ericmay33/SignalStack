@@ -8,6 +8,7 @@ const API_BASE_URL =
 interface ApiTickerData {
   ticker: string;
   name: string;
+  logo?: string;
   price: {
     current: number;
     change_pct: number;
@@ -44,7 +45,7 @@ interface ApiResponse {
   meta: { fetched_at: string; source: string };
 }
 
-export function mapApiTicker(d: ApiTickerData): StockData {
+function mapApiTicker(d: ApiTickerData): StockData {
   return {
     name: d.name,
     price: d.price.current,
@@ -62,12 +63,11 @@ export function mapApiTicker(d: ApiTickerData): StockData {
       avg: d.price_target.avg,
       high: d.price_target.high,
     },
-    logo: "",
-    color: "",
+    logo: d.logo ?? "",
   };
 }
 
-export function mapApiResponse(
+function mapApiResponse(
   apiData: Record<string, ApiTickerData>
 ): Record<string, StockData> {
   const result: Record<string, StockData> = {};

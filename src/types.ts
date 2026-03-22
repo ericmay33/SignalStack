@@ -20,5 +20,4 @@ export interface StockData {
   ratings: StockRatings;
   target: StockTarget;
   logo: string;
-  color: string;
 }

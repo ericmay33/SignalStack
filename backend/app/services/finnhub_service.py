@@ -43,6 +43,14 @@ async def get_price_target(ticker: str) -> dict:
         return {}
 
 
+async def get_profile(ticker: str) -> dict:
+    try:
+        return await _get("/stock/profile2", {"symbol": ticker})  # type: ignore[return-value]
+    except Exception as exc:
+        logger.warning("finnhub get_profile failed for %s: %s", ticker, exc)
+        return {}
+
+
 async def get_eps_estimate(ticker: str) -> dict:
     try:
         return await _get("/stock/eps-estimate", {"symbol": ticker, "freq": "annual"})  # type: ignore[return-value]

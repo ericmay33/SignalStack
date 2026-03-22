@@ -2,10 +2,11 @@ import { useState } from "react";
 
 interface LogoBoxProps {
   ticker: string;
+  logoUrl?: string;
   size?: number;
 }
 
-export default function LogoBox({ ticker, size = 48 }: LogoBoxProps) {
+export default function LogoBox({ ticker, logoUrl, size = 48 }: LogoBoxProps) {
   const [failed, setFailed] = useState(false);
 
   return (
@@ -13,9 +14,9 @@ export default function LogoBox({ ticker, size = 48 }: LogoBoxProps) {
       className="rounded-xl bg-surface-container flex items-center justify-center shrink-0 overflow-hidden"
       style={{ width: size, height: size }}
     >
-      {!failed ? (
+      {logoUrl && !failed ? (
         <img
-          src={`https://eodhd.com/img/logos/US/${ticker}.png`}
+          src={logoUrl}
           alt={ticker}
           className="w-full h-full object-contain p-1.5"
           onError={() => setFailed(true)}

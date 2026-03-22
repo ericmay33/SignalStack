@@ -1,5 +1,4 @@
 import StockCard from "../components/StockCard";
-import { STOCK_DB } from "../lib/mockData";
 import type { StockData } from "../types";
 
 interface DashboardProps {
@@ -11,20 +10,6 @@ interface DashboardProps {
 }
 
 export default function Dashboard({ tickers, data, loading, error, retry }: DashboardProps) {
-  // Merge: use API data when available, fill in logo/color from mock
-  const displayData: Record<string, StockData> | null = data
-    ? Object.fromEntries(
-        Object.entries(data).map(([ticker, d]) => [
-          ticker,
-          {
-            ...d,
-            logo: d.logo || STOCK_DB[ticker]?.logo || "",
-            color: d.color || STOCK_DB[ticker]?.color || "",
-          },
-        ])
-      )
-    : null;
-
   return (
     <div className="pt-20 pb-16 px-5 max-w-7xl mx-auto min-h-screen">
       {/* Title section */}
@@ -41,7 +26,7 @@ export default function Dashboard({ tickers, data, loading, error, retry }: Dash
       {error && (
         <div className="mb-6 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-between">
           <span className="text-red-400 text-[13px] font-medium">
-            {error} — showing {data ? "cached" : "mock"} data
+            {error}
           </span>
           <button
             onClick={retry}
@@ -63,14 +48,14 @@ export default function Dashboard({ tickers, data, loading, error, retry }: Dash
           ))}
 
         {!loading &&
-          displayData &&
+          data &&
           tickers.map(
             (t, i) =>
-              displayData[t] && (
+              data[t] && (
                 <StockCard
                   key={t}
                   ticker={t}
-                  data={displayData[t]}
+                  data={data[t]}
                   delay={i * 80}
                 />
               )

@@ -8,6 +8,7 @@ from app.services.finnhub_service import (
     get_recommendations,
     get_price_target,
     get_eps_estimate,
+    get_profile,
 )
 from app.services.yfinance_service import get_growth_data
 
@@ -68,12 +69,13 @@ async def fetch_single_ticker(ticker: str) -> dict:
 
     loop = asyncio.get_running_loop()
 
-    # Fire all four Finnhub endpoints concurrently alongside yfinance
-    quote, recs, targets, _eps, growth = await asyncio.gather(
+    # Fire all Finnhub endpoints concurrently alongside yfinance
+    quote, recs, targets, _eps, profile, growth = await asyncio.gather(
         get_quote(ticker),
         get_recommendations(ticker),
         get_price_target(ticker),
         get_eps_estimate(ticker),
+        get_profile(ticker),
         loop.run_in_executor(_executor, get_growth_data, ticker),
     )
 
@@ -110,6 +112,7 @@ async def fetch_single_ticker(ticker: str) -> dict:
     result = {
         "ticker": ticker,
         "name": growth.get("name", ticker),
+        "logo": profile.get("logo", ""),
         "price": {
             "current": current_price,
             "change_pct": float(quote.get("dp") or 0),
