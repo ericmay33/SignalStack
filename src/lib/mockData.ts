@@ -1,8 +1,6 @@
 import type { StockData } from "../types";
 
-export type StockDB = Record<string, StockData>;
-
-export const STOCK_DB: StockDB = {
+export const STOCK_DB: Record<string, StockData> = {
   NVDA: {
     name: "NVIDIA Corp",
     price: 875.28,
@@ -106,19 +104,3 @@ export const STOCK_DB: StockDB = {
 };
 
 export const ALL_TICKERS = Object.keys(STOCK_DB);
-
-export const CONSENSUS_COLORS: Record<string, string> = {
-  strongBuy: "#22c55e",
-  buy: "#4ade80",
-  hold: "#eab308",
-  sell: "#ef4444",
-  strongSell: "#dc2626",
-};
-
-export const CONSENSUS_LABELS: Record<string, { bg: string; text: string }> = {
-  "Strong Buy": { bg: "#22c55e", text: "#022c22" },
-  Buy: { bg: "#4ade80", text: "#052e16" },
-  Hold: { bg: "#eab308", text: "#422006" },
-  Sell: { bg: "#ef4444", text: "#450a0a" },
-  "Strong Sell": { bg: "#dc2626", text: "#fff" },
-};

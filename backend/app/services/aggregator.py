@@ -1,4 +1,6 @@
 import asyncio
+import logging
+import time
 from concurrent.futures import ThreadPoolExecutor
 
 from app.services.finnhub_service import (
@@ -9,8 +11,32 @@ from app.services.finnhub_service import (
 )
 from app.services.yfinance_service import get_growth_data
 
+logger = logging.getLogger(__name__)
+
 _executor = ThreadPoolExecutor(max_workers=8)
 
+# ── In-memory cache: ticker → { data, timestamp } ──────────────────────
+_CACHE_TTL = 60  # seconds
+_cache: dict[str, dict] = {}
+
+
+def _cache_get(ticker: str) -> dict | None:
+    entry = _cache.get(ticker)
+    if entry and (time.monotonic() - entry["ts"]) < _CACHE_TTL:
+        return entry["data"]
+    return None
+
+
+def _cache_set(ticker: str, data: dict) -> None:
+    _cache[ticker] = {"data": data, "ts": time.monotonic()}
+
+
+def cache_clear() -> None:
+    """Exposed for testing."""
+    _cache.clear()
+
+
+# ── Consensus derivation ────────────────────────────────────────────────
 
 def derive_consensus(
     strong_buy: int, buy: int, hold: int, sell: int, strong_sell: int
@@ -32,7 +58,14 @@ def derive_consensus(
     return "Strong Sell"
 
 
+# ── Fetch + merge ───────────────────────────────────────────────────────
+
 async def fetch_single_ticker(ticker: str) -> dict:
+    cached = _cache_get(ticker)
+    if cached is not None:
+        logger.debug("cache hit for %s", ticker)
+        return cached
+
     loop = asyncio.get_running_loop()
 
     # Fire all four Finnhub endpoints concurrently alongside yfinance
@@ -53,14 +86,28 @@ async def fetch_single_ticker(ticker: str) -> dict:
     total = sb + b + h + s + ss
 
     current_price: float = float(quote.get("c") or 0)
-    target_mean: float   = float(targets.get("targetMean") or 0)
+
+    # Price targets: prefer Finnhub, fall back to yfinance
+    fh_low  = float(targets.get("targetLow") or 0)
+    fh_avg  = float(targets.get("targetMean") or 0)
+    fh_high = float(targets.get("targetHigh") or 0)
+    fh_med  = float(targets.get("targetMedian") or 0)
+
+    if fh_avg:
+        pt_low, pt_avg, pt_median, pt_high = fh_low, fh_avg, fh_med, fh_high
+    else:
+        pt_low  = float(growth.get("targetLowPrice") or 0)
+        pt_avg  = float(growth.get("targetMeanPrice") or 0)
+        pt_high = float(growth.get("targetHighPrice") or 0)
+        pt_median = pt_avg  # yfinance doesn't provide median separately
+
     upside_pct = (
-        round(((target_mean - current_price) / current_price) * 100, 2)
-        if current_price and target_mean
+        round(((pt_avg - current_price) / current_price) * 100, 2)
+        if current_price and pt_avg
         else 0.0
     )
 
-    return {
+    result = {
         "ticker": ticker,
         "name": growth.get("name", ticker),
         "price": {
@@ -80,10 +127,10 @@ async def fetch_single_ticker(ticker: str) -> dict:
             "total_analysts": total,
         },
         "price_target": {
-            "low": float(targets.get("targetLow") or 0),
-            "avg": target_mean,
-            "median": float(targets.get("targetMedian") or 0),
-            "high": float(targets.get("targetHigh") or 0),
+            "low": pt_low,
+            "avg": pt_avg,
+            "median": pt_median,
+            "high": pt_high,
             "upside_pct": upside_pct,
         },
         "growth": {
@@ -93,6 +140,9 @@ async def fetch_single_ticker(ticker: str) -> dict:
             "earnings_growth_pct": growth.get("earnings_growth_pct", 0.0),
         },
     }
+
+    _cache_set(ticker, result)
+    return result
 
 
 async def fetch_all_stock_data(tickers: list[str]) -> dict:

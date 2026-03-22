@@ -1,60 +1,81 @@
-import { ArrowLeft, Search, Bell, Settings } from "lucide-react";
 import StockCard from "../components/StockCard";
-import SummaryFooter from "../components/SummaryFooter";
 import { STOCK_DB } from "../lib/mockData";
+import type { StockData } from "../types";
 
 interface DashboardProps {
   tickers: string[];
-  onBack: () => void;
+  data: Record<string, StockData> | null;
+  loading: boolean;
+  error: string | null;
+  retry: () => void;
 }
 
-export default function Dashboard({ tickers, onBack }: DashboardProps) {
+export default function Dashboard({ tickers, data, loading, error, retry }: DashboardProps) {
+  // Merge: use API data when available, fill in logo/color from mock
+  const displayData: Record<string, StockData> | null = data
+    ? Object.fromEntries(
+        Object.entries(data).map(([ticker, d]) => [
+          ticker,
+          {
+            ...d,
+            logo: d.logo || STOCK_DB[ticker]?.logo || "",
+            color: d.color || STOCK_DB[ticker]?.color || "",
+          },
+        ])
+      )
+    : null;
+
   return (
-    <div className="relative z-[1] px-5 py-4">
-      {/* Top bar */}
-      <div className="flex items-center justify-between mb-5">
-        {/* Back button */}
-        <button
-          onClick={onBack}
-          className="flex items-center gap-1.5 bg-white/[0.05] border border-white/10 rounded-lg px-3.5 py-2 text-slate-400 text-xs font-semibold cursor-pointer uppercase tracking-[0.05em] hover:bg-green-500/10 hover:border-green-500/30 hover:text-green-500 transition-all duration-150"
-        >
-          <ArrowLeft size={14} />
-          Back to List Manager
-        </button>
-
-        {/* Active ticker chips */}
-        <div className="flex items-center gap-1.5 bg-[rgba(15,25,18,0.8)] border border-green-500/15 rounded-[10px] px-3.5 py-1.5">
-          <Search size={13} color="#64748b" />
-          {tickers.map((t) => (
-            <span
-              key={t}
-              className="bg-green-500/[0.12] rounded-[6px] px-2 py-[3px] text-[11px] font-bold text-slate-200 font-mono flex items-center gap-1"
-            >
-              <span className="text-[10px]">{STOCK_DB[t]?.logo}</span>
-              {t}
-            </span>
-          ))}
-        </div>
-
-        {/* Right icons */}
-        <div className="flex gap-2.5 items-center">
-          <Bell size={16} color="#64748b" className="cursor-pointer" />
-          <Settings size={16} color="#64748b" className="cursor-pointer" />
-        </div>
+    <div className="pt-20 pb-16 px-5 max-w-7xl mx-auto min-h-screen">
+      {/* Title section */}
+      <div className="mb-8">
+        <h1 className="text-3xl sm:text-4xl font-black tracking-tighter text-on-surface font-headline uppercase mb-1">
+          SignalStack <span className="text-zinc-600">|</span> Dashboard
+        </h1>
+        <p className="text-[11px] text-zinc-600 font-semibold uppercase tracking-[0.15em]">
+          Real-time analyst terminal &bull; session active
+        </p>
       </div>
+
+      {/* Error banner */}
+      {error && (
+        <div className="mb-6 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-between">
+          <span className="text-red-400 text-[13px] font-medium">
+            {error} — showing {data ? "cached" : "mock"} data
+          </span>
+          <button
+            onClick={retry}
+            className="text-red-400 text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/20 transition-colors cursor-pointer border-none"
+          >
+            Retry
+          </button>
+        </div>
+      )}
 
       {/* Cards grid */}
-      <div className="flex flex-wrap gap-4 justify-center">
-        {tickers.map(
-          (t, i) =>
-            STOCK_DB[t] && (
-              <StockCard key={t} ticker={t} data={STOCK_DB[t]} delay={i * 100} />
-            )
-        )}
-      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+        {loading &&
+          tickers.map((t) => (
+            <div
+              key={t}
+              className="glass-panel rounded-2xl h-[380px] animate-pulse"
+            />
+          ))}
 
-      {/* Summary footer */}
-      <SummaryFooter tickers={tickers} />
+        {!loading &&
+          displayData &&
+          tickers.map(
+            (t, i) =>
+              displayData[t] && (
+                <StockCard
+                  key={t}
+                  ticker={t}
+                  data={displayData[t]}
+                  delay={i * 80}
+                />
+              )
+          )}
+      </div>
     </div>
   );
 }

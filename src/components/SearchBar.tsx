@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { Search, Plus } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
 import { STOCK_DB, ALL_TICKERS } from "../lib/mockData";
 
 interface SearchBarProps {
@@ -11,6 +10,20 @@ interface SearchBarProps {
 export default function SearchBar({ tickers, onAdd, count }: SearchBarProps) {
   const [search, setSearch] = useState("");
   const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [focused, setFocused] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // CMD+K shortcut
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        inputRef.current?.focus();
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
 
   const handleSearch = (val: string) => {
     setSearch(val);
@@ -36,42 +49,61 @@ export default function SearchBar({ tickers, onAdd, count }: SearchBarProps) {
   };
 
   return (
-    <div className="relative mb-4">
-      <div className="flex items-center gap-2.5 bg-[rgba(15,25,18,0.9)] border border-green-500/20 rounded-xl px-4 py-3 transition-colors duration-200">
-        <Search size={16} color="#22c55e" />
+    <div className="relative mb-5">
+      {/* Search input wrapper */}
+      <div
+        className={`flex items-center gap-3 glass-panel rounded-xl px-4 py-3.5 transition-all duration-200 ${
+          focused ? "glow-green border-primary/30" : ""
+        }`}
+      >
+        <span className="material-symbols-outlined text-primary text-[20px]">search</span>
         <input
+          ref={inputRef}
           type="text"
           value={search}
           onChange={(e) => handleSearch(e.target.value)}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setTimeout(() => setFocused(false), 200)}
           onKeyDown={(e) => {
             if (e.key === "Enter" && suggestions.length > 0) handleAdd(suggestions[0]);
           }}
-          placeholder="Search ticker or company name..."
-          className="flex-1 bg-transparent border-none outline-none text-slate-100 text-sm font-medium font-mono"
+          placeholder="SEARCH TICKER OR COMPANY..."
+          className="flex-1 bg-transparent border-none outline-none text-on-surface text-sm font-medium placeholder:text-zinc-600 placeholder:uppercase"
         />
-        <span className="text-[11px] text-slate-600 font-semibold whitespace-nowrap">
+        <div className="hidden sm:flex items-center gap-1">
+          <kbd className="px-1.5 py-0.5 rounded bg-white/5 text-[10px] text-zinc-500 font-medium border border-white/10">
+            CMD
+          </kbd>
+          <kbd className="px-1.5 py-0.5 rounded bg-white/5 text-[10px] text-zinc-500 font-medium border border-white/10">
+            K
+          </kbd>
+        </div>
+        <span className="text-[11px] text-zinc-600 font-semibold tabular-nums">
           {count}/8
         </span>
       </div>
 
+      {/* Autocomplete dropdown */}
       {suggestions.length > 0 && (
-        <div className="absolute top-full left-0 right-0 bg-[rgba(10,18,12,0.97)] border border-green-500/20 rounded-[10px] mt-1 overflow-hidden z-50 backdrop-blur-xl">
+        <div className="absolute top-full left-0 right-0 mt-1.5 glass-panel rounded-xl overflow-hidden z-50">
           {suggestions.map((t) => (
             <div
               key={t}
               onClick={() => handleAdd(t)}
-              className="flex items-center justify-between px-4 py-2.5 cursor-pointer hover:bg-green-500/[0.08] border-b border-white/[0.04] last:border-0 transition-colors duration-150"
+              className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-primary/[0.06] border-b border-white/[0.04] last:border-0 transition-colors duration-150 group"
             >
-              <div className="flex items-center gap-2.5">
-                <span className="text-sm">{STOCK_DB[t].logo}</span>
-                <span className="text-slate-100 font-bold text-[13px] font-mono">
+              <div className="flex items-center gap-3">
+                <span className="text-primary font-bold text-xs">$</span>
+                <span className="text-on-surface font-bold text-sm">
                   {t}
                 </span>
-                <span className="text-slate-500 text-xs">
+                <span className="text-zinc-500 text-xs">
                   {STOCK_DB[t].name}
                 </span>
               </div>
-              <Plus size={14} color="#22c55e" />
+              <span className="material-symbols-outlined text-[20px] text-zinc-600 group-hover:text-primary transition-colors">
+                add_circle
+              </span>
             </div>
           ))}
         </div>

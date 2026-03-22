@@ -1,8 +1,10 @@
 import { useState } from "react";
-import CircuitBackground from "./components/CircuitBackground";
+import Header from "./components/Header";
+import Footer from "./components/Footer";
 import ListManager from "./pages/ListManager";
 import Dashboard from "./pages/Dashboard";
 import { useWatchlist } from "./hooks/useWatchlist";
+import { useStockData } from "./hooks/useStockData";
 
 type Page = "list" | "dashboard";
 
@@ -10,6 +12,9 @@ export default function App() {
   const [page, setPage] = useState<Page>("list");
   const [transitioning, setTransitioning] = useState(false);
   const { tickers, setTickers } = useWatchlist();
+  const { data, loading, error, retry } = useStockData(
+    page === "dashboard" ? tickers : []
+  );
 
   const navigate = (target: Page) => {
     setTransitioning(true);
@@ -20,8 +25,12 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
-      <CircuitBackground />
+    <div className="min-h-screen relative bg-[#0e0e0e]">
+      <Header
+        page={page}
+        tickers={tickers}
+        onBack={() => navigate("list")}
+      />
       <div
         style={{
           opacity: transitioning ? 0 : 1,
@@ -36,9 +45,16 @@ export default function App() {
             onApply={() => navigate("dashboard")}
           />
         ) : (
-          <Dashboard tickers={tickers} onBack={() => navigate("list")} />
+          <Dashboard
+            tickers={tickers}
+            data={data}
+            loading={loading}
+            error={error}
+            retry={retry}
+          />
         )}
       </div>
+      <Footer data={page === "dashboard" ? data : null} />
     </div>
   );
 }

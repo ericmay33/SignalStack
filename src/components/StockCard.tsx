@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import ConsensusDonut from "./ConsensusDonut";
+import SvgDonut from "./SvgDonut";
+import LogoBox from "./LogoBox";
 import PriceTargetBar from "./PriceTargetBar";
-import { CONSENSUS_COLORS } from "../lib/mockData";
 import type { StockData } from "../types";
 
 interface StockCardProps {
@@ -10,12 +10,12 @@ interface StockCardProps {
   delay?: number;
 }
 
-const ratingKeys = [
-  { label: "Strong Buy", key: "strongBuy" as const, colorKey: "strongBuy" },
-  { label: "Buy", key: "buy" as const, colorKey: "buy" },
-  { label: "Hold", key: "hold" as const, colorKey: "hold" },
-  { label: "Sell", key: "sell" as const, colorKey: "sell" },
-  { label: "Strong Sell", key: "strongSell" as const, colorKey: "strongSell" },
+const ratingRows = [
+  { label: "Strong Buy", key: "strongBuy" as const, color: "#22c55e" },
+  { label: "Buy", key: "buy" as const, color: "#4ade80" },
+  { label: "Hold", key: "hold" as const, color: "#eab308" },
+  { label: "Sell", key: "sell" as const, color: "#ef4444" },
+  { label: "Strong Sell", key: "strongSell" as const, color: "#dc2626" },
 ];
 
 export default function StockCard({ ticker, data, delay = 0 }: StockCardProps) {
@@ -27,83 +27,72 @@ export default function StockCard({ ticker, data, delay = 0 }: StockCardProps) {
   }, [delay]);
 
   const isUp = data.change >= 0;
+  const total =
+    data.ratings.strongBuy +
+    data.ratings.buy +
+    data.ratings.hold +
+    data.ratings.sell +
+    data.ratings.strongSell;
 
   return (
     <div
-      className="relative overflow-hidden backdrop-blur-xl min-w-[260px] max-w-[340px] flex-[1_1_280px] px-[22px] py-5 rounded-2xl border border-green-500/15"
+      className="glass-panel rounded-2xl p-5 hover:border-primary/20 transition-all duration-300"
       style={{
         opacity: visible ? 1 : 0,
-        transform: visible ? "translateY(0)" : "translateY(20px)",
-        transition: "all 0.5s cubic-bezier(0.22, 1, 0.36, 1)",
-        background:
-          "linear-gradient(145deg, rgba(15,25,18,0.92) 0%, rgba(10,18,12,0.95) 100%)",
+        transform: visible ? "translateY(0)" : "translateY(16px)",
+        transition: "opacity 0.5s ease, transform 0.5s ease, border-color 0.3s ease",
       }}
     >
-      {/* Top edge glow */}
-      <div
-        className="absolute top-0 left-0 right-0 h-px"
-        style={{
-          background:
-            "linear-gradient(90deg, transparent, rgba(34,197,94,0.3), transparent)",
-        }}
-      />
-
-      {/* Header */}
-      <div className="flex justify-between items-start mb-3">
-        <div>
-          <div className="flex items-center gap-2 mb-0.5">
-            <span className="text-base">{data.logo}</span>
-            <span className="text-lg font-extrabold text-slate-100 tracking-[0.03em]">
+      {/* Header: Logo + Ticker + Price */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <LogoBox ticker={ticker} size={48} />
+          <div>
+            <div className="text-on-surface font-bold text-base tracking-wide">
               {ticker}
-            </span>
+            </div>
+            <div className="text-zinc-500 text-xs font-medium">
+              {data.name}
+            </div>
           </div>
-          <span className="text-[10px] text-slate-500 font-medium">
-            Full Comparison
-          </span>
         </div>
-        <span className="text-[11px] text-slate-500 font-semibold mt-[3px]">
-          {ticker}
-        </span>
+        <div className="text-right">
+          <div className="text-on-surface font-bold text-lg tabular-nums">
+            ${data.price.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+          </div>
+          <div
+            className={`text-xs font-semibold ${isUp ? "text-primary" : "text-red-400"}`}
+          >
+            {isUp ? "+" : ""}{data.change.toFixed(2)}%
+          </div>
+        </div>
       </div>
-
-      {/* Price */}
-      <div className="flex items-baseline gap-2.5 mb-3.5">
-        <span
-          className="text-[32px] font-extrabold text-slate-100 tracking-[-0.02em] font-mono"
-        >
-          ${data.price.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-        </span>
-        <span
-          className={`text-sm font-bold ${isUp ? "text-green-500" : "text-red-500"}`}
-        >
-          {isUp ? "+" : ""}
-          {data.change}%
-        </span>
-      </div>
-
-      {/* Analyst Consensus label */}
-      <span className="text-[11px] text-slate-400 font-semibold tracking-[0.05em] uppercase block mb-2.5">
-        Analyst Consensus
-      </span>
 
       {/* Donut + Ratings breakdown */}
-      <div className="flex items-center gap-3.5 mb-4">
-        <ConsensusDonut ratings={data.ratings} consensus={data.consensus} size={110} />
-        <div className="flex flex-col gap-1">
-          {ratingKeys.map((r) => (
-            <div key={r.label} className="flex items-center gap-1.5 text-[11px]">
-              <div
-                className="w-[7px] h-[7px] rounded-full shrink-0"
-                style={{ background: CONSENSUS_COLORS[r.colorKey] }}
-              />
-              <span className="text-slate-400 font-medium min-w-[70px]">
-                {r.label}
-              </span>
-              <span className="text-slate-200 font-bold min-w-[18px] text-right">
-                {data.ratings[r.key]}
-              </span>
-            </div>
-          ))}
+      <div className="flex items-center gap-4 mb-5">
+        <SvgDonut ratings={data.ratings} consensus={data.consensus} size={100} />
+        <div className="flex-1 flex flex-col gap-1.5">
+          {ratingRows.map((r) => {
+            const count = data.ratings[r.key];
+            const pct = total > 0 ? (count / total) * 100 : 0;
+            return (
+              <div key={r.label} className="flex items-center gap-2 text-[11px]">
+                <span
+                  className="w-2 h-2 rounded-full shrink-0"
+                  style={{ background: r.color }}
+                />
+                <span className="text-zinc-500 font-medium flex-1 min-w-0">
+                  {r.label}
+                </span>
+                <span className="text-on-surface font-bold tabular-nums w-5 text-right">
+                  {count}
+                </span>
+                <span className="text-zinc-600 font-medium tabular-nums w-9 text-right">
+                  {pct.toFixed(0)}%
+                </span>
+              </div>
+            );
+          })}
         </div>
       </div>
 
