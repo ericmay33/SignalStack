@@ -15,7 +15,7 @@ export default function LogoBox({ ticker, size = 48 }: LogoBoxProps) {
     >
       {!failed ? (
         <img
-          src={`https://assets.allinvestview.com/logos/${ticker}.png`}
+          src={`https://img.logokit.com/ticker/${ticker}`}
           alt={ticker}
           className="w-full h-full object-contain p-1.5"
           onError={() => setFailed(true)}
