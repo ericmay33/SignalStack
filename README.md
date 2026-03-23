@@ -12,10 +12,6 @@ SignalStack lets you build a watchlist of up to 8 stock tickers and view analyst
 - **Backend**: Python FastAPI, Uvicorn
 - **Data Sources**: Finnhub.io (quotes, analyst ratings, price targets, EPS), yfinance (company info, growth metrics)
 
-## Screenshots
-
-![Dashboard](docs/screenshot.png)
-
 ## Getting Started
 
 ### Prerequisites
